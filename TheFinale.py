@@ -78,7 +78,7 @@ class FlazzCardApp:
         self.account = account
         self.selected_category = tk.StringVar()
 
-        # Create the GUI elements
+
         self.add_money_label = tk.Label(root, text="Enter the amount to add (in IDR):")
         self.entry_add_money = tk.Entry(root)
         self.add_money_button = tk.Button(root, text="Add Money", command=self.add_money)
@@ -95,15 +95,14 @@ class FlazzCardApp:
 
         self.balance_label = tk.Label(root, text=f"Remaining Balance: {self.format_currency(self.account.get_balance())} IDR")
 
-        # Create a Figure and an Axes (subplots) for the spending pattern chart
+
         self.figure, self.ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 6))
-        self.canvas = FigureCanvasTkAgg(self.figure, master=root)  # A tk.DrawingArea.
+        self.canvas = FigureCanvasTkAgg(self.figure, master=root)  
         self.canvas_widget = self.canvas.get_tk_widget()
 
-        # Export Button
+
         self.export_button = tk.Button(root, text="Export to Excel", command=self.export_to_excel, height=2, width=20)
 
-        # Place GUI elements using the grid layout
         self.add_money_label.grid(row=0, column=0, pady=10, padx=10, sticky="w")
         self.entry_add_money.grid(row=0, column=1, pady=10, padx=10)
         self.add_money_button.grid(row=0, column=2, pady=10, padx=10)
@@ -117,29 +116,24 @@ class FlazzCardApp:
 
         self.balance_label.grid(row=4, column=0, columnspan=3, pady=10, padx=10)
 
-        self.canvas_widget.grid(row=0, column=3, rowspan=5, pady=10, padx=20, sticky="nsew")  # Increased padx
+        self.canvas_widget.grid(row=0, column=3, rowspan=5, pady=10, padx=20, sticky="nsew") 
 
         self.export_button.grid(row=5, column=0, columnspan=4, pady=20)
 
-        # Adjust layout to add space between charts and titles
         self.figure.subplots_adjust(wspace=0.5, hspace=0.5)
 
-        # Set border around titles
         for ax_row in self.ax:
             for ax in ax_row:
                 ax.title.set_bbox(dict(boxstyle="round,pad=0.3", edgecolor="black", facecolor="w"))
 
-        # Add space between category and timestamp labels in all charts
         for ax_row in self.ax:
             for ax in ax_row:
                 ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=True)
                 ax.set_xticks(ax.get_xticks())
                 ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
 
-        # Update the spending pattern chart initially
         self.update_charts()
 
-        # Set weight to make the canvas expandable
         root.grid_rowconfigure(0, weight=1)
         root.grid_columnconfigure(3, weight=1)
 
@@ -153,7 +147,7 @@ class FlazzCardApp:
             self.update_charts()
 
     def use_money(self):
-        amount = float(self.entry_add_money.get())  # Using the same entry for simplicity
+        amount = float(self.entry_add_money.get()) 
         category = self.selected_category.get()
         if not isnan(amount) and category:
             if self.account.get_balance() >= amount:
@@ -191,7 +185,6 @@ class FlazzCardApp:
         self.update_stats_chart()
 
     def update_spending_pattern_chart(self):
-        # Extract categories and corresponding total spending for each category
         categories = []
         spending = []
 
@@ -203,7 +196,6 @@ class FlazzCardApp:
             category_index = categories.index(transaction.category)
             spending[category_index] += transaction.amount
 
-        # Plot the spending pattern line chart
         self.ax[0, 0].clear()
         self.ax[0, 0].plot(categories, spending, marker='o', color='blue', linestyle='-', linewidth=2)
         self.ax[0, 0].set_title('Spending Pattern')
@@ -211,11 +203,10 @@ class FlazzCardApp:
         self.ax[0, 0].set_ylabel('Total Spending (IDR)')
 
     def update_deposit_chart(self):
-        # Extract deposit data
+
         deposit_dates = [transaction.timestamp for transaction in self.account.get_transaction_history() if transaction.amount > 0]
         deposit_amounts = [transaction.amount for transaction in self.account.get_transaction_history() if transaction.amount > 0]
 
-        # Plot the deposit line chart
         self.ax[0, 1].clear()
         self.ax[0, 1].plot(deposit_dates, deposit_amounts, marker='o', color='green', linestyle='-', linewidth=2)
         self.ax[0, 1].set_title('Deposit History')
@@ -223,11 +214,9 @@ class FlazzCardApp:
         self.ax[0, 1].set_ylabel('Deposit Amount (IDR)')
 
     def update_spending_chart(self):
-        # Extract spending data
         spending_dates = [transaction.timestamp for transaction in self.account.get_transaction_history() if transaction.amount < 0]
         spending_amounts = [abs(transaction.amount) for transaction in self.account.get_transaction_history() if transaction.amount < 0]
 
-        # Plot the spending line chart
         self.ax[1, 0].clear()
         self.ax[1, 0].plot(spending_dates, spending_amounts, marker='o', color='red', linestyle='-', linewidth=2)
         self.ax[1, 0].set_title('Spending History')
@@ -235,25 +224,20 @@ class FlazzCardApp:
         self.ax[1, 0].set_ylabel('Spending Amount (IDR)')
 
     def update_stats_chart(self):
-        # Extract stats data
         stats_dates = [transaction.timestamp for transaction in self.account.get_transaction_history()]
         stats_balance = [transaction.amount for transaction in self.account.get_transaction_history()]
 
-        # Plot the stats line chart
         self.ax[1, 1].clear()
         self.ax[1, 1].plot(stats_dates, stats_balance, marker='o', color='purple', linestyle='-', linewidth=2)
         self.ax[1, 1].set_title('Transaction Statistics')
         self.ax[1, 1].set_xlabel('Timestamp')
         self.ax[1, 1].set_ylabel('Transaction Amount (IDR)')
 
-        # Redraw the canvas
         self.canvas.draw()
 
     def export_to_excel(self):
-        # Ask user for the file path
         file_path = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel files", "*.xlsx")])
 
-        # Check if the user selected a file
         if file_path:
             transactions = self.account.get_transaction_history()
             data = {"Category": [], "Amount": [], "Timestamp": []}
